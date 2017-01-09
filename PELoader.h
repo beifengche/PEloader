@@ -66,7 +66,8 @@ public:
 
 	//获取导入表
 	void getImportTable(const IMAGE_IMPORT_DESCRIPTOR * &pImageImportDescriptor);
-
+	//获取导出表
+	void getExportTable(const IMAGE_EXPORT_DIRECTORY *&pExportDirectory);
 	//获取指定指针的数据
 	void getFileData(const DWORD &pFOA,const char* &pData);
 

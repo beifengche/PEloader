@@ -348,3 +348,11 @@ void PELoader::getImoprtName(
 	DWORD foa = RVAtoFOA(rav);
 	pImageThunkData = reinterpret_cast<IMAGE_THUNK_DATA*>(pFileBuffer + foa);
 }
+
+
+void PELoader::getExportTable(const IMAGE_EXPORT_DIRECTORY *&pExportDirectory)
+{
+	DWORD foa = RVAtoFOA(pImageDataDirectory[0].VirtualAddress);
+	pExportDirectory =
+		reinterpret_cast<const IMAGE_EXPORT_DIRECTORY *>(pFileBuffer + foa);
+}

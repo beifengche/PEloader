@@ -8,7 +8,7 @@ int main()
  
 	int n = sizeof(_IMAGE_DOS_HEADER);
 	PELoader ptest;
-	ptest.loadFile("test.exe");
+	ptest.loadFile("add.dll");
 	ptest.setInformation();
 
 	const IMAGE_DOS_HEADER *pTestDOSHeader = NULL;
@@ -86,47 +86,98 @@ int main()
 // 		std::cout << pname << std::endl;
 // 		k++;
 // 	}
-	const IMAGE_THUNK_DATA* pImageThunkData = NULL;
+// 	const IMAGE_THUNK_DATA* pImageThunkData = NULL;
+// 
+// 	while (import[k].Name != 0)
+// 	{
+// 		const char * pname = NULL;
+// 		DWORD name = import[k].Name;
+// 		DWORD foaName = ptest.RVAtoFOA(name);
+// 		ptest.getFileData(foaName, pname);
+// 		std::cout << pname << std::endl;
+// 		
+// 		const IMAGE_IMPORT_DESCRIPTOR * p = import+k;
+// 
+// 		ptest.getImoprtName(p, pImageThunkData);
+// 		int h = 0;
+// 		while (pImageThunkData[h].u1.Ordinal != 0)
+// 		{
+// 			DWORD *pw = (DWORD*)(pImageThunkData+h);
+// 			if (IMAGE_SNAP_BY_ORDINAL(*pw))
+// 			{
+// 				DWORD w = 0X7fffffff & *pw;
+// 				std::cout << w << std::endl;
+// 			}
+// 			else
+// 			{
+// 				DWORD w = 0X7fffffff & *pw;
+// 				DWORD foaw = ptest.RVAtoFOA(w);
+// 				const char* pfname = NULL;
+// 				ptest.getFileData(foaw, pfname);
+// 				IMAGE_IMPORT_BY_NAME * pfunname =
+// 					reinterpret_cast<IMAGE_IMPORT_BY_NAME *>(
+// 					const_cast<char*>(pfname));
+// 				std::cout << (char*)pfunname->Name << std::endl;
+// 
+// 			}
+// 			h++;
+// 		}
+// 		
+// 
+// 
+// 		k++;
+// 	}
+	const IMAGE_EXPORT_DIRECTORY* pExportDirectory = NULL;
+	ptest.getExportTable(pExportDirectory);
+	DWORD name = ptest.RVAtoFOA(pExportDirectory->Name);
+	const char * pname = NULL;
+	ptest.getFileData(name, pname);
+	std::cout << pname << std::endl;
 
-	while (import[k].Name != 0)
+	int j = 0;		
+	DWORD foaaddress = ptest.RVAtoFOA(pExportDirectory->AddressOfFunctions);
+	const char* paddress = NULL;
+	ptest.getFileData(foaaddress, paddress);
+	const DWORD * padd = (DWORD*)(char*)paddress;
+
+	DWORD foanum = ptest.RVAtoFOA(pExportDirectory->AddressOfNameOrdinals);
+	const char* pnum = NULL;
+	ptest.getFileData(foanum, pnum);
+	const WORD * pun = (WORD*)(char*)pnum;
+
+	DWORD foaname = ptest.RVAtoFOA(pExportDirectory->AddressOfNames);
+	const char* pfname = NULL;
+	ptest.getFileData(foaname, pfname);
+	DWORD * pf = (DWORD*)pfname;
+	for (int i = 0; i < pExportDirectory->NumberOfFunctions; i++)
 	{
-		const char * pname = NULL;
-		DWORD name = import[k].Name;
-		DWORD foaName = ptest.RVAtoFOA(name);
-		ptest.getFileData(foaName, pname);
-		std::cout << pname << std::endl;
+
+		std::cout << std::hex << padd[i] << ":  ";
+
 		
-		const IMAGE_IMPORT_DESCRIPTOR * p = import+k;
-
-		ptest.getImoprtName(p, pImageThunkData);
-		int h = 0;
-		while (pImageThunkData[h].u1.Ordinal != 0)
+		if (pun[j]==i)
 		{
-			DWORD *pw = (DWORD*)(pImageThunkData+h);
-			if (IMAGE_SNAP_BY_ORDINAL(*pw))
-			{
-				DWORD w = 0X7fffffff & *pw;
-				std::cout << w << std::endl;
-			}
-			else
-			{
-				DWORD w = 0X7fffffff & *pw;
-				DWORD foaw = ptest.RVAtoFOA(w);
-				const char* pfname = NULL;
-				ptest.getFileData(foaw, pfname);
-				IMAGE_IMPORT_BY_NAME * pfunname =
-					reinterpret_cast<IMAGE_IMPORT_BY_NAME *>(
-					const_cast<char*>(pfname));
-				std::cout << (char*)pfunname->Name << std::endl;
-
-			}
-			h++;
+			std::cout << std::hex <<( pExportDirectory->Base+pun[j]) << ":  ";
+			DWORD adds = pf[j];
+			DWORD foa = ptest.RVAtoFOA(adds);
+			const char * pffname = NULL;
+			ptest.getFileData(foa, pffname);
+			std::cout << pffname << std::endl;
+			j++;
+		}
+		else
+		{
+			std::cout << std::hex << (pExportDirectory->Base + pun[j]) << ":  ";
+			std::cout << "----" << std::endl;
 		}
 		
 
 
-		k++;
+
+
 	}
+
+
 	std::cin.get();
 
 	return 0;
